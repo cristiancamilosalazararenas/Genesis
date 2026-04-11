@@ -1,19 +1,24 @@
 package com.breaze.genesis.entities;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "subscriptions")
+@Table(name = "subscription")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString(exclude = {"user", "plan"})
 public class Subscription {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "start_date", nullable = false)
@@ -22,11 +27,11 @@ public class Subscription {
     @Column(name = "end_date", nullable = false)
     private LocalDateTime endDate;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "state", nullable = false, length = 50)
     private String state;
 
     @Column(name = "accredited_tokens")
-    private Integer accreditedTokens = 0;
+    private Integer accreditedTokens;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
