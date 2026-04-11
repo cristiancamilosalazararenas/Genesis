@@ -24,8 +24,8 @@ public class Plan {
     @Column(name = "tokens_granted", nullable = false)
     private Integer tokensGranted = 0;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private Boolean asset;
+    @Column(name = "is_active")
+    private String isActive;
 
     @Column(name = "creation_date", nullable = false, updatable = false)
     private LocalDateTime creationDate;
