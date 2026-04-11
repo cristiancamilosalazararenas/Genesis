@@ -41,4 +41,7 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Subscription> subscriptions;
 
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = false)
+    private Rol rol;
 }
