@@ -32,6 +32,9 @@ public class User {
     @Column(length = 50)
     private String asset;
 
+    @Column(name = "status", nullable = false, length = 20)
+    private String status = "ACTIVE";
+
     @Column(name="creation_date", updatable = false)
     private LocalDateTime creationDate;
 
