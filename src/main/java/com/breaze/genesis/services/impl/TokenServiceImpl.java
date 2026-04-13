@@ -35,9 +35,9 @@ public class TokenServiceImpl implements ITokenService {
      * {@inheritDoc}
      */
     @Override
-    public int getBalance(Long userId) {
+    public double getBalance(Long userId) {
         return tokenRepository.findByUserId(userId)
                 .map(Token::getBalance)
-                .orElse(0);
+                .orElse((double) 0);
     }
 }

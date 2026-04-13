@@ -21,5 +21,5 @@ public interface ITokenService {
      * @param userId User identifier
      * @return Current token balance
      */
-    int getBalance(Long userId);
+    double getBalance(Long userId);
 }

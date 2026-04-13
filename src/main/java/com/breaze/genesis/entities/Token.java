@@ -28,5 +28,5 @@ public class Token {
 
     /** Current token balance available for the user */
     @Column(name = "balance", nullable = false)
-    private int balance;
+    private Double balance;
 }
