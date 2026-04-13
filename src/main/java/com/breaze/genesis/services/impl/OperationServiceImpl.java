@@ -6,12 +6,19 @@ import com.breaze.genesis.services.ITokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Implementation of IOperationService.
+ * Contains the business logic for credit, conversion, BMI and sleep operations.
+ */
 @Service
 public class OperationServiceImpl implements IOperationService {
 
     @Autowired
     private ITokenService tokenService;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public CreditResponse calculateCredit(CreditRequest request, Long userId) {
         int baseCost = 50;
@@ -30,6 +37,9 @@ public class OperationServiceImpl implements IOperationService {
         return response;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ConversionResponse convertCurrency(ConversionRequest request, Long userId) {
         int baseCost = 20;
@@ -48,6 +58,9 @@ public class OperationServiceImpl implements IOperationService {
         return response;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ImcResponse calculateBmi(ImcRequest request, Long userId) {
         int baseCost = 15;
@@ -75,6 +88,9 @@ public class OperationServiceImpl implements IOperationService {
         return response;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public SleepResponse calculateSleep(SleepRequest request, Long userId) {
         int baseCost = 20;

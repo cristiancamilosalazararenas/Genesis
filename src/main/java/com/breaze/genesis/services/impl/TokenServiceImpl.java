@@ -6,12 +6,19 @@ import com.breaze.genesis.services.ITokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Implementation of ITokenService.
+ * Contains the business logic for consuming tokens and retrieving balances.
+ */
 @Service
 public class TokenServiceImpl implements ITokenService {
 
     @Autowired
     private ITokenRepository tokenRepository;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean consumeTokens(Long userId, int cost) {
         Token token = tokenRepository.findByUserId(userId)
@@ -24,6 +31,9 @@ public class TokenServiceImpl implements ITokenService {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getBalance(Long userId) {
         return tokenRepository.findByUserId(userId)
@@ -31,4 +41,3 @@ public class TokenServiceImpl implements ITokenService {
                 .orElse(0);
     }
 }
-
