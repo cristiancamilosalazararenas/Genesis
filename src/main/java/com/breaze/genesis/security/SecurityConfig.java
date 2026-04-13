@@ -77,12 +77,12 @@ public class SecurityConfig {
                          * Manejo de errores de autenticación.
                          */
                         .authenticationEntryPoint((req, res, e) ->
-                                res.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+                                res.sendError(HttpServletResponse.SC_UNAUTHORIZED))//401 No autenticado
                         /**
                          * Manejo de errores de autorización.
                          */
                         .accessDeniedHandler((req, res, e) ->
-                                res.sendError(HttpServletResponse.SC_FORBIDDEN))
+                                res.sendError(HttpServletResponse.SC_FORBIDDEN))//403 sin permisos
                 )
 
                 /**
