@@ -61,7 +61,7 @@ public class AdminServiceImpl implements IAdminService {
     @Override
     @Transactional
     public AdminMessageResponse updateOperationStatus(String code, OperationStatusRequest request) {
-        Operation operation = operationRepository.findById(code)
+        Operation operation = operationRepository.findById(Long.valueOf(code))
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Operación no encontrada: " + code));
         operation.setActive(request.getActive());
