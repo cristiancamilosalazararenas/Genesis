@@ -1,13 +1,15 @@
 package com.breaze.genesis.dtos.operation;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class IMCResponse {
-    private double imc;
+public class ImcRequest {
+    private double weightKg;
+    private double heightCm;
 }
+
 
