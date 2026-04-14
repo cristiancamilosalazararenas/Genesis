@@ -71,8 +71,10 @@ CREATE TABLE tokens (
     expired BOOLEAN,
     revoked BOOLEAN,
     user_id BIGINT,
+    balance DOUBLE,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
 INSERT INTO roles (name) VALUES ('USER'), ('ADMIN');
 
 INSERT INTO plans (name, tokens_granted, is_active) VALUES
