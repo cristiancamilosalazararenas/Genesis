@@ -18,17 +18,34 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
+/**
+ * Implementación del servicio de planes que gestiona la creación,
+ * actualización, eliminación y suscripción a planes.
+ */
 @Service
 @RequiredArgsConstructor
 public class PlanServiceImpl implements IPlanService {
 
-    private final IPlanRepository       planRepository;
+    /**
+     * Repositorio de planes.
+     */
+    private final IPlanRepository planRepository;
+
+    /**
+     * Repositorio de suscripciones.
+     */
     private final ISubscriptionRepository subscriptionRepository;
-    private final IUserRepository       userRepository;
 
-    // ── CRUD ─────────────────────────────────────────────────────────────────
+    /**
+     * Repositorio de usuarios.
+     */
+    private final IUserRepository userRepository;
 
+    /**
+     * Obtiene todos los planes disponibles.
+     *
+     * @return lista de planes en formato de respuesta
+     */
     @Override
     @Transactional(readOnly = true)
     public List<PlanResponse> findAll() {
@@ -38,6 +55,12 @@ public class PlanServiceImpl implements IPlanService {
                 .toList();
     }
 
+    /**
+     * Obtiene un plan por su identificador.
+     *
+     * @param id identificador del plan
+     * @return plan encontrado en formato de respuesta
+     */
     @Override
     @Transactional(readOnly = true)
     public PlanResponse findById(Long id) {
@@ -46,6 +69,12 @@ public class PlanServiceImpl implements IPlanService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Plan no encontrado"));
     }
 
+    /**
+     * Crea un nuevo plan.
+     *
+     * @param request datos del plan a crear
+     * @return plan creado en formato de respuesta
+     */
     @Override
     @Transactional
     public PlanResponse create(PlanRequest request) {
@@ -56,6 +85,13 @@ public class PlanServiceImpl implements IPlanService {
         return toResponse(planRepository.save(plan));
     }
 
+    /**
+     * Actualiza un plan existente.
+     *
+     * @param id identificador del plan
+     * @param request datos actualizados del plan
+     * @return plan actualizado en formato de respuesta
+     */
     @Override
     @Transactional
     public PlanResponse update(Long id, PlanRequest request) {
@@ -73,6 +109,11 @@ public class PlanServiceImpl implements IPlanService {
         return toResponse(planRepository.save(plan));
     }
 
+    /**
+     * Elimina un plan si no tiene suscripciones activas.
+     *
+     * @param id identificador del plan
+     */
     @Override
     @Transactional
     public void delete(Long id) {
@@ -87,15 +128,16 @@ public class PlanServiceImpl implements IPlanService {
         planRepository.deleteById(id);
     }
 
-    // ── SUBSCRIPTION ─────────────────────────────────────────────────────────
-
     /**
-     * Suscribe al usuario autenticado al plan indicado.
+     * Suscribe a un usuario a un plan.
      *
-     * Decisión de equipo sobre el saldo anterior:
-     *  - Se conserva el saldo existente (tokens no vencen).
-     *  - Se suman los tokens del nuevo plan al balance actual.
-     *  - La suscripción anterior queda en estado INACTIVE.
+     * La lógica de negocio establece que el saldo de tokens previo del usuario
+     * se conserva y se suman los tokens del nuevo plan.
+     * Si el usuario tiene una suscripción activa, esta se desactiva.
+     *
+     * @param planId identificador del plan
+     * @param userEmail correo del usuario
+     * @return información de la suscripción realizada
      */
     @Override
     @Transactional
@@ -106,14 +148,12 @@ public class PlanServiceImpl implements IPlanService {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
-        // Desactivar suscripción activa anterior si existe
         subscriptionRepository.findByUserIdAndState(user.getId(), "ACTIVE")
                 .ifPresent(existing -> {
                     existing.setState("INACTIVE");
                     subscriptionRepository.save(existing);
                 });
 
-        // Crear nueva suscripción
         Subscription subscription = new Subscription();
         subscription.setUser(user);
         subscription.setPlan(plan);
@@ -123,7 +163,6 @@ public class PlanServiceImpl implements IPlanService {
         subscription.setAccreditedTokens(plan.getTokensGranted());
         subscriptionRepository.save(subscription);
 
-        // Acreditar tokens al balance del usuario (se conserva saldo previo)
         int newBalance = user.getBalanceTokens() + plan.getTokensGranted();
         user.setBalanceTokens(newBalance);
         userRepository.save(user);
@@ -137,8 +176,12 @@ public class PlanServiceImpl implements IPlanService {
         );
     }
 
-    // ── MAPPER ───────────────────────────────────────────────────────────────
-
+    /**
+     * Convierte una entidad Plan en un DTO PlanResponse.
+     *
+     * @param plan entidad plan
+     * @return DTO con información del plan
+     */
     private PlanResponse toResponse(Plan plan) {
         return new PlanResponse(
                 plan.getId(),

@@ -1,0 +1,89 @@
+DROP DATABASE IF EXISTS genesis_db;
+CREATE DATABASE genesis_db;
+USE genesis_db;
+
+CREATE TABLE roles (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE plans (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    tokens_granted INT NOT NULL DEFAULT 0,
+    is_active BOOLEAN NOT NULL,
+    creation_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE operations (
+    code VARCHAR(50) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    cost_base DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    active TINYINT(1) NOT NULL DEFAULT 1,
+    PRIMARY KEY (code)
+);
+
+CREATE TABLE users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    balance_tokens INT DEFAULT 0,
+    status VARCHAR(50) CHECK (status IN ('ACTIVE', 'INACTIVE')),
+    creation_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_date DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    role_id BIGINT,
+    FOREIGN KEY (role_id) REFERENCES roles(id)
+);
+
+CREATE TABLE subscriptions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    plan_id BIGINT NOT NULL,
+    start_date DATETIME NOT NULL,
+    end_date DATETIME NOT NULL,
+    state VARCHAR(50) NOT NULL,
+    accredited_tokens INT DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (plan_id) REFERENCES plans(id)
+);
+
+CREATE TABLE transactions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    operation_code VARCHAR(50) NOT NULL,
+    tokens_consumed INT NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (operation_code) REFERENCES operations(code)
+);
+
+CREATE TABLE exchange_rate (
+    id BIGINT NOT NULL PRIMARY KEY,
+    cop_per_usd DECIMAL(12,2) NOT NULL,
+    last_updated DATETIME NOT NULL
+);
+
+CREATE TABLE tokens (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    token VARCHAR(500),
+    expired BOOLEAN,
+    revoked BOOLEAN,
+    user_id BIGINT,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+INSERT INTO roles (name) VALUES ('USER'), ('ADMIN');
+
+INSERT INTO plans (name, tokens_granted, is_active) VALUES
+    ('FREE',        200, TRUE),
+    ('PRO',        1000, TRUE),
+    ('ENTERPRISE', 5000, TRUE);
+
+INSERT INTO operations (code, name, cost_base, active) VALUES
+    ('OP-01', '¿Cuánto me cuesta ese crédito?', 50.00, 1),
+    ('OP-02', 'Conversor COP a USD',            20.00, 1),
+    ('OP-03', 'Calculadora de IMC',              15.00, 1),
+    ('OP-04', 'Calculadora de sueño',            20.00, 1);
+
+INSERT INTO exchange_rate (id, cop_per_usd, last_updated) VALUES (1, 4200.00, NOW());

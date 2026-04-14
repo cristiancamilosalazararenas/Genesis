@@ -17,19 +17,45 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-
+/**
+ * Implementación del servicio de administración que gestiona usuarios,
+ * operaciones, tasas de cambio y métricas del sistema.
+ */
 @Service
 @RequiredArgsConstructor
 public class AdminServiceImpl implements IAdminService {
 
-    private final IUserRepository         userRepository;
-    private final IOperationRepository    operationRepository;
+    /**
+     * Repositorio de usuarios.
+     */
+    private final IUserRepository userRepository;
+
+    /**
+     * Repositorio de operaciones.
+     */
+    private final IOperationRepository operationRepository;
+
+    /**
+     * Repositorio de tasas de cambio.
+     */
     private final IExchangeRateRepository exchangeRateRepository;
-    private final ITransactionRepository  transactionRepository;
+
+    /**
+     * Repositorio de transacciones.
+     */
+    private final ITransactionRepository transactionRepository;
+
+    /**
+     * Repositorio de suscripciones.
+     */
     private final ISubscriptionRepository subscriptionRepository;
 
-    // ── USERS ─────────────────────────────────────────────────────────────────
-
+    /**
+     * Obtiene todos los usuarios de forma paginada.
+     *
+     * @param pageable configuración de paginación
+     * @return página de usuarios en formato administrativo
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<UserAdminResponse> getAllUsers(Pageable pageable) {
@@ -37,6 +63,13 @@ public class AdminServiceImpl implements IAdminService {
                 .map(this::toUserAdminResponse);
     }
 
+    /**
+     * Actualiza el estado de un usuario.
+     *
+     * @param userId identificador del usuario
+     * @param request datos con el nuevo estado
+     * @return mensaje de confirmación
+     */
     @Override
     @Transactional
     public AdminMessageResponse updateUserStatus(Long userId, UserStatusRequest request) {
@@ -46,6 +79,13 @@ public class AdminServiceImpl implements IAdminService {
         return new AdminMessageResponse("Estado del usuario actualizado a " + request.getStatus());
     }
 
+    /**
+     * Recarga tokens a un usuario.
+     *
+     * @param userId identificador del usuario
+     * @param request datos de la recarga
+     * @return información de la recarga realizada
+     */
     @Override
     @Transactional
     public TokenRechargeResponse rechargeTokens(Long userId, TokenRechargeRequest request) {
@@ -56,8 +96,13 @@ public class AdminServiceImpl implements IAdminService {
         return new TokenRechargeResponse(userId, request.getAmount(), newBalance);
     }
 
-    // ── OPERATIONS ────────────────────────────────────────────────────────────
-
+    /**
+     * Actualiza el estado de una operación.
+     *
+     * @param code identificador de la operación
+     * @param request datos con el nuevo estado
+     * @return mensaje de confirmación
+     */
     @Override
     @Transactional
     public AdminMessageResponse updateOperationStatus(String code, OperationStatusRequest request) {
@@ -69,8 +114,11 @@ public class AdminServiceImpl implements IAdminService {
         return new AdminMessageResponse("Operación " + code + " actualizada a active=" + request.getActive());
     }
 
-    // ── EXCHANGE RATE ─────────────────────────────────────────────────────────
-
+    /**
+     * Obtiene la tasa de cambio actual.
+     *
+     * @return información de la tasa de cambio
+     */
     @Override
     @Transactional(readOnly = true)
     public ExchangeRateResponse getExchangeRate() {
@@ -80,6 +128,12 @@ public class AdminServiceImpl implements IAdminService {
         return new ExchangeRateResponse(rate.getCopPerUsd(), rate.getLastUpdated());
     }
 
+    /**
+     * Actualiza la tasa de cambio.
+     *
+     * @param request datos de la nueva tasa
+     * @return información actualizada de la tasa de cambio
+     */
     @Override
     @Transactional
     public ExchangeRateResponse updateExchangeRate(ExchangeRateRequest request) {
@@ -92,8 +146,13 @@ public class AdminServiceImpl implements IAdminService {
         return new ExchangeRateResponse(rate.getCopPerUsd(), rate.getLastUpdated());
     }
 
-    // ── METRICS ───────────────────────────────────────────────────────────────
-
+    /**
+     * Obtiene la cantidad de tokens usados por día en un rango de fechas.
+     *
+     * @param from fecha inicial
+     * @param to fecha final
+     * @return lista de tokens agrupados por día
+     */
     @Override
     @Transactional(readOnly = true)
     public List<TokensPerDayResponse> getTokensPerDay(LocalDate from, LocalDate to) {
@@ -109,6 +168,12 @@ public class AdminServiceImpl implements IAdminService {
                 .toList();
     }
 
+    /**
+     * Obtiene las operaciones más utilizadas.
+     *
+     * @param pageable configuración de paginación
+     * @return página con las operaciones más frecuentes
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<TopOperationResponse> getTopOperations(Pageable pageable) {
@@ -120,6 +185,12 @@ public class AdminServiceImpl implements IAdminService {
                 ));
     }
 
+    /**
+     * Obtiene los usuarios con mayor consumo de tokens.
+     *
+     * @param pageable configuración de paginación
+     * @return página con los usuarios más activos
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<TopUserResponse> getTopUsers(Pageable pageable) {
@@ -131,14 +202,24 @@ public class AdminServiceImpl implements IAdminService {
                 ));
     }
 
-    // ── HELPERS ───────────────────────────────────────────────────────────────
-
+    /**
+     * Busca un usuario por su identificador o lanza una excepción si no existe.
+     *
+     * @param userId identificador del usuario
+     * @return usuario encontrado
+     */
     private User findUserOrThrow(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Usuario no encontrado con id: " + userId));
     }
 
+    /**
+     * Convierte una entidad User en un DTO UserAdminResponse.
+     *
+     * @param user entidad usuario
+     * @return DTO con información administrativa del usuario
+     */
     private UserAdminResponse toUserAdminResponse(User user) {
         String activePlan = subscriptionRepository
                 .findByUserIdAndState(user.getId(), "ACTIVE")
